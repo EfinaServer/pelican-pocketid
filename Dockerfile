@@ -1,0 +1,47 @@
+FROM ghcr.io/pelican-dev/panel:latest AS base
+
+FROM composer:2 AS build
+WORKDIR /work
+
+# Bring application source from upstream image
+COPY --from=base /var/www/html /work
+
+# Add our schema and patch
+COPY patch/PocketIDSchema.php /work/app/Extensions/OAuth/Schemas/PocketIDSchema.php
+COPY patch/pocketid-provider.patch /tmp/pocketid-provider.patch
+
+# Tools needed to apply patch
+RUN set -eux; \
+    if command -v apk >/dev/null 2>&1; then \
+        apk add --no-cache git patch; \
+    elif command -v apt-get >/dev/null 2>&1; then \
+        apt-get update && apt-get install -y --no-install-recommends git patch && rm -rf /var/lib/apt/lists/*; \
+    elif command -v microdnf >/dev/null 2>&1; then \
+        microdnf install -y git patch && microdnf clean all; \
+    else \
+        echo "No supported package manager found to install git/patch" && exit 1; \
+    fi
+
+# Require extra composer module and optimize autoload (ignore platform reqs in builder)
+RUN composer require socialiteproviders/pocketid --no-interaction --no-progress --no-scripts --ignore-platform-reqs
+
+# Apply code changes
+RUN git apply /tmp/pocketid-provider.patch || (cd /work && patch -p1 < /tmp/pocketid-provider.patch)
+RUN composer dump-autoload --optimize
+
+# Final image: start from upstream and overlay only our changes
+FROM ghcr.io/pelican-dev/panel:latest
+
+USER root
+
+COPY --chown=root:www-data --chmod=640 --from=build /work/vendor /var/www/html/vendor
+COPY --chown=root:www-data --chmod=640 --from=build /work/composer.json /var/www/html/composer.json
+COPY --chown=root:www-data --chmod=640 --from=build /work/composer.lock /var/www/html/composer.lock
+COPY --chown=root:www-data --chmod=640 --from=build /work/app/Providers/Extensions/OAuthServiceProvider.php /var/www/html/app/Providers/Extensions/OAuthServiceProvider.php
+COPY --chown=root:www-data --chmod=640 --from=build /work/app/Extensions/OAuth/Schemas/PocketIDSchema.php /var/www/html/app/Extensions/OAuth/Schemas/PocketIDSchema.php
+
+# Ensure permissions for runtime-writable directories remain correct
+RUN chown -R www-data:www-data /var/www/html/vendor /var/www/html/bootstrap/cache /var/www/html/storage \
+    && chmod -R u+rwX,g+rwX,o-rwx /var/www/html/vendor /var/www/html/bootstrap/cache /var/www/html/storage
+
+USER www-data
