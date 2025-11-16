@@ -23,8 +23,8 @@ RUN set -eux; \
     fi
 
 # Require extra composer module and optimize autoload (ignore platform reqs in builder)
-RUN composer config audit.block-insecure false \
- && composer require socialiteproviders/pocketid --no-interaction --no-progress --no-scripts --ignore-platform-reqs
+ENV COMPOSER_DISABLE_SECURITY_ADVISORIES=1
+RUN composer require socialiteproviders/pocketid --no-interaction --no-progress --no-scripts --ignore-platform-reqs
 
 # Apply code changes
 RUN git apply /tmp/pocketid-provider.patch || (cd /work && patch -p1 < /tmp/pocketid-provider.patch)
