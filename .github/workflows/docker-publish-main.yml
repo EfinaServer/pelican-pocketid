@@ -1,11 +1,11 @@
-name: Build and Push Docker Image (Latest)
+name: Build and Push Docker Image (main)
 
 on:
   push:
     branches:
       - main
     paths:
-      - Dockerfile
+      - Dockerfile.main
   workflow_dispatch: {}
 
 permissions:
