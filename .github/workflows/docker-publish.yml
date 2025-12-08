@@ -24,6 +24,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/efinaserver/panel
+          tags: |
+            type=raw,value=latest
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -42,3 +44,4 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          file: Dockerfile
