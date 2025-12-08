@@ -23,7 +23,6 @@ RUN set -eux; \
     fi
 
 # Require extra composer module and optimize autoload (ignore platform reqs in builder)
-ENV COMPOSER_DISABLE_SECURITY_ADVISORIES=1
 RUN composer require socialiteproviders/pocketid --no-interaction --no-progress --no-scripts --ignore-platform-reqs
 
 # Apply code changes
