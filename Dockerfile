@@ -1,6 +1,6 @@
 FROM ghcr.io/pelican-dev/panel:latest@sha256:aec08833e40b54e773cae68945d81f42561d176244032e33c152a92ebd0e0deb AS base
 
-FROM composer:2@sha256:c4f6b39889c396b86fd3603c047bb73929f05fcaa887e78f172d366e0891062b AS build
+FROM composer:2@sha256:f746ca10fd351429e13a6fc9599ccd41d4fc413e036ae8b0dad9e2041adcffcd AS build
 WORKDIR /work
 
 # Bring application source from upstream image
