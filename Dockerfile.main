@@ -1,4 +1,4 @@
-FROM ghcr.io/pelican-dev/panel:main@sha256:0225e33a704b23e45191bcd8d9869b85ed36ddc1a5def3bad95759d6755fce20 AS base
+FROM ghcr.io/pelican-dev/panel:main@sha256:ca645a245d86b3a2b04083edfdf8ec4452dfee4a22ddda01abb22f9844149af8 AS base
 
 FROM composer:2@sha256:22a95bd2bc3cf6ff19550a246208138d35f0015602db3d67dc6841945324acc1 AS build
 WORKDIR /work
@@ -30,7 +30,7 @@ RUN git apply /tmp/pocketid-provider.patch || (cd /work && patch -p1 < /tmp/pock
 RUN composer dump-autoload --optimize
 
 # Final image: start from upstream and overlay only our changes
-FROM ghcr.io/pelican-dev/panel:main@sha256:0225e33a704b23e45191bcd8d9869b85ed36ddc1a5def3bad95759d6755fce20
+FROM ghcr.io/pelican-dev/panel:main@sha256:ca645a245d86b3a2b04083edfdf8ec4452dfee4a22ddda01abb22f9844149af8
 
 USER root
 
